@@ -1,7 +1,8 @@
-# EngiMentor — AI-Powered Engineering Project Intelligence Platform
+# VIFE — Vibe Intelligence for Engineering
 
 ## Product
-Helps students and independent developers understand software projects they built
+VIFE is an AI-powered engineering project intelligence and adaptive learning platform.
+It helps students and independent developers understand software projects they built
 but don't fully understand. Analyses a project, maps the concepts it uses to real
 source locations, finds knowledge gaps, and generates learning and evaluation.
 Audience: university CS/engineering students and independent developers.

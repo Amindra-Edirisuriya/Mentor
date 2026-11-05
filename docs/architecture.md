@@ -1,4 +1,4 @@
-# EngiMentor architecture
+# VIFE architecture
 
 Status: Milestone 1, increment 0 (scaffolding). This document describes what exists
 now and the boundaries the rest of Milestone 1 will follow. Update it when the
@@ -6,7 +6,7 @@ architecture changes.
 
 ## Overview
 
-EngiMentor analyses a software project (ZIP upload in Milestone 1), maps the
+VIFE (Vibe Intelligence for Engineering) analyses a software project (ZIP upload in Milestone 1), maps the
 concepts it uses to real source locations, finds knowledge gaps and generates
 learning material. The system has two halves with a strict boundary between them:
 
@@ -94,6 +94,13 @@ The dev server proxies `/api/*` to the backend, so the backend needs no CORS con
 | `src/components/UploadForm.tsx` | ZIP upload. |
 | `src/components/ReportView.tsx` | Stats, technologies (used/declared + evidence), packages/entry points, languages, routes, models, notes (sensitive files, skipped archives, syntax errors). |
 | `src/components/SummaryPanel.tsx` | Generate/show validated claims with evidence chips; rejected claims listed. |
+| `src/components/ui.tsx` | Shared UI: badges, cards, empty states, spinner, skeletons, alert. |
+| `src/lib/errors.ts` | Friendly error messages (API status / network failures) and client-side ZIP check (unit-tested). |
+| `public/logo.png` | VIFE logo, shown in the header and used as the favicon. |
+
+Branding: the Tailwind `brand` palette in `tailwind.config.js` is taken from the logo
+(navy background, violet → blue → cyan). The client-side ZIP check is only for friendlier
+messages; the backend remains the authority on what is accepted.
 
 ## Configuration
 

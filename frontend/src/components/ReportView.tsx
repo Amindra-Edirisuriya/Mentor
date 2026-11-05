@@ -22,9 +22,12 @@ export function ReportView({ projectId, report }: { projectId: string; report: A
           ["Routes", s.route_count],
           ["Models", s.model_count],
         ].map(([label, value]) => (
-          <div key={label} className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
-            <div className="text-xs uppercase text-slate-500">{label}</div>
-            <div className="text-2xl font-semibold">{value}</div>
+          <div key={label} className="card relative overflow-hidden p-4">
+            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-violet via-brand-blue to-brand-cyan" aria-hidden />
+            <div className="text-xs font-medium text-slate-500">{label}</div>
+            <div className="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+              {Number(value).toLocaleString()}
+            </div>
           </div>
         ))}
       </div>
@@ -35,24 +38,26 @@ export function ReportView({ projectId, report }: { projectId: string; report: A
         {report.frameworks.length === 0 ? (
           <Empty>No known frameworks detected.</Empty>
         ) : (
-          <table className="w-full text-sm">
+          <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+          <table className="w-full min-w-[32rem] text-sm">
             <tbody>
               {report.frameworks.map((f) => (
                 <tr key={f.name} className="border-t border-slate-100 align-top">
-                  <td className="py-1.5 pr-2 font-medium">{f.name}</td>
-                  <td className="py-1.5 pr-2 text-slate-500">{f.category}</td>
-                  <td className="py-1.5 pr-2">
+                  <td className="py-2 pr-3 font-medium text-slate-800">{f.name}</td>
+                  <td className="py-2 pr-3 text-slate-500">{f.category}</td>
+                  <td className="py-2 pr-3">
                     <Badge>{f.status}</Badge>
                   </td>
-                  <td className="py-1.5">
+                  <td className="py-2">
                     <EvidenceList items={f.evidence} prefix={prefix} />
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          </div>
         )}
-        <p className="mt-2 text-xs text-slate-500">
+        <p className="mt-3 text-xs text-slate-500">
           <b>used</b> = imported in source code · <b>declared</b> = only listed in a manifest or config file
         </p>
       </Section>
@@ -65,7 +70,7 @@ export function ReportView({ projectId, report }: { projectId: string; report: A
             <ul className="space-y-2 text-sm">
               {report.structure.packages.map((p) => (
                 <li key={p.manifest_path}>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <span className="font-mono">{stripPrefix(p.directory, prefix) || "(root)"}</span>
                     <Badge>{p.role}</Badge>
                     {p.name && <span className="text-slate-500">{p.name}</span>}
@@ -86,12 +91,12 @@ export function ReportView({ projectId, report }: { projectId: string; report: A
           {languages.length === 0 ? (
             <Empty>No source files.</Empty>
           ) : (
-            <ul className="space-y-1 text-sm">
+            <ul className="space-y-2 text-sm">
               {languages.map((l) => (
                 <li key={l.name} className="flex items-center gap-2">
-                  <span className="w-24">{l.name}</span>
-                  <div className="h-2 flex-1 rounded bg-slate-100">
-                    <div className="h-2 rounded bg-slate-700" style={{ width: `${l.percent}%` }} />
+                  <span className="w-20 truncate sm:w-24">{l.name}</span>
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+                    <div className="h-2 rounded-full bg-gradient-to-r from-brand-violet to-brand-cyan" style={{ width: `${l.percent}%` }} />
                   </div>
                   <span className="w-20 text-right text-xs text-slate-500">{l.lines} lines</span>
                 </li>
@@ -108,21 +113,27 @@ export function ReportView({ projectId, report }: { projectId: string; report: A
           <div className="space-y-3">
             {routeGroups.map(([file, routes]) => (
               <div key={file}>
-                <div className="mb-1 font-mono text-xs text-slate-500">{stripPrefix(file, prefix)}</div>
-                <table className="w-full text-sm">
+                <div className="mb-1 truncate font-mono text-xs text-slate-500">{stripPrefix(file, prefix)}</div>
+                <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+                <table className="w-full min-w-[28rem] text-sm">
                   <tbody>
                     {routes.map((r) => (
                       <tr key={r.evidence.id} className="border-t border-slate-100">
-                        <td className="w-16 py-1 font-mono text-xs font-semibold">{r.method}</td>
-                        <td className="py-1 font-mono">{r.path ?? "—"}</td>
-                        <td className="py-1 text-xs text-slate-500">{r.middleware.join(", ")}</td>
-                        <td className="py-1 text-right">
+                        <td className="w-20 py-1.5">
+                          <span className="rounded bg-brand-navy px-1.5 py-0.5 font-mono text-[11px] font-semibold text-cyan-200">
+                            {r.method}
+                          </span>
+                        </td>
+                        <td className="py-1.5 font-mono">{r.path ?? "—"}</td>
+                        <td className="py-1.5 text-xs text-slate-500">{r.middleware.join(", ")}</td>
+                        <td className="py-1.5 text-right">
                           <EvidenceChip evidence={r.evidence} prefix={prefix} />
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
+                </div>
               </div>
             ))}
           </div>
@@ -136,9 +147,9 @@ export function ReportView({ projectId, report }: { projectId: string; report: A
           <ul className="space-y-2 text-sm">
             {report.relationships.models.map((m) => (
               <li key={m.evidence.id}>
-                <span className="font-medium">{m.name}</span>{" "}
+                <span className="font-medium text-slate-800">{m.name}</span>{" "}
                 <EvidenceChip evidence={m.evidence} prefix={prefix} />
-                <div className="text-xs text-slate-600">
+                <div className="mt-1 text-xs text-slate-600">
                   fields: {m.fields.join(", ") || "—"}
                   {m.refs.length > 0 && <> · references: {m.refs.join(", ")}</>}
                 </div>

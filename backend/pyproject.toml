@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "engimentor-backend"
 version = "0.1.0"
-description = "EngiMentor backend: project analysis and evidence-grounded learning."
+description = "VIFE backend: project analysis and evidence-grounded learning."
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.115",

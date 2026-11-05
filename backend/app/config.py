@@ -15,7 +15,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    app_name: str = "EngiMentor"
+    app_name: str = "VIFE"
     app_env: str = "development"
     database_url: str = "postgresql+psycopg://engimentor:change-me@localhost:5433/engimentor"
     storage_dir: Path = REPO_ROOT / "storage"

@@ -5,7 +5,7 @@
 
 ## Context
 
-EngiMentor's value depends on users trusting what it says about their code. LLMs
+VIFE's value depends on users trusting what it says about their code. LLMs
 can produce fluent but false claims, such as describing a feature (say, JWT auth)
 that a project doesn't actually implement. For students learning from their own
 projects, a confident wrong explanation is worse than none.

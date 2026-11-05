@@ -104,3 +104,15 @@ Postgres (host port 5433), ADRs 0001–0002. 1 test.
   local app, so the check used 5180; the Vite config falls back to the next free port.
 - Not covered: no component/DOM tests (would need jsdom + Testing Library) and no browser check of
   the upload flow.
+
+## Rebrand to VIFE and frontend polish
+- Product renamed EngiMentor → VIFE ("Vibe Intelligence for Engineering"): page title, header,
+  backend `app_name`, `pyproject.toml` description, CLAUDE.md, docs, new README. Code folders, the
+  Python package and the Postgres user/database name (`engimentor`) were deliberately not renamed.
+- Logo moved to `frontend/public/logo.png`; used in the header and as favicon.
+- Redesigned UI with a logo-derived palette: gradient header, cards, drag-and-drop upload, skeleton
+  loading states, empty states, dismissible error alert, scrollable tables on narrow screens.
+- Friendly errors (`src/lib/errors.ts`): network/5xx/413/404 mapped to actionable text; non-ZIP
+  files (e.g. `.rar`) and >50 MB files are flagged before upload. 5 new Vitest tests.
+- Checked: backend 98 passed; frontend 11 passed; `npm run build` OK; headless-Chrome screenshots
+  of the empty state at 1366px and 390px widths. Not checked in a browser: a populated report.

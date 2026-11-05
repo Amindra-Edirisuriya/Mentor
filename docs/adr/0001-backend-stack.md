@@ -5,7 +5,7 @@
 
 ## Context
 
-EngiMentor needs an HTTP API for uploads and reports, durable storage for projects
+VIFE needs an HTTP API for uploads and reports, durable storage for projects
 and analysis runs (with a flexible report document), schema migrations, and typed
 configuration. The project is built by a small team, so the stack should be
 mainstream, well documented and quick to test.
