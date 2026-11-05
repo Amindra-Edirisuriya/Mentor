@@ -75,11 +75,30 @@ RULES: tuple[Rule, ...] = (
 )
 
 
+MAX_USAGE_EVIDENCE = 5
+
+
 class FrameworkFinding(BaseModel):
     name: str
     category: str
-    status: str = "declared"  # declared in manifest/config; not yet proven used
+    status: str = "declared"  # "declared" (manifest/config only) or "used" (imported in source)
     evidence: list[Evidence]
+
+
+def apply_usage(
+    findings: list[FrameworkFinding], imported_packages: dict[str, list[Evidence]]
+) -> list[FrameworkFinding]:
+    """Upgrade findings to ``used`` when source code imports one of the rule's packages."""
+    rules = {r.name: r for r in RULES}
+    for finding in findings:
+        usage: list[Evidence] = []
+        for package in rules[finding.name].packages:
+            usage.extend(imported_packages.get(package, []))
+        if usage:
+            finding.status = "used"
+            known = {e.id for e in finding.evidence}
+            finding.evidence += [e for e in usage if e.id not in known][:MAX_USAGE_EVIDENCE]
+    return findings
 
 
 def detect_frameworks(manifests: list[Manifest], scan: ScanResult) -> list[FrameworkFinding]:

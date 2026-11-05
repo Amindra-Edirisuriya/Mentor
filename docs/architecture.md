@@ -39,6 +39,14 @@ learning material. The system has two halves with a strict boundary between them
 | `docker-compose.yml` | Local PostgreSQL 16 (`db` service) with a named volume and healthcheck. |
 | `backend/tests/` | pytest suite. |
 
+| `backend/app/ingestion/zip_safe.py` | Safe extraction of untrusted ZIP uploads (limits, traversal, symlinks, bombs, nested archives). |
+| `backend/app/analysis/evidence.py` | `Evidence` model with deterministic ids. |
+| `backend/app/analysis/scanner.py` | File walk, classification, language detection, sensitive-file flags. |
+| `backend/app/analysis/manifests.py` | `package.json` / `requirements.txt` / `pyproject.toml` parsing with line evidence. |
+| `backend/app/analysis/frameworks.py` | Rule-based technology detection (`declared` → `used`). |
+| `backend/app/analysis/structure.py` | Directory tree, packages + roles, entry points, layer hints. |
+| `backend/app/analysis/relationships.py` | Tree-sitter JS/TS: imports, Express routes, Mongoose models ([ADR 0003](adr/0003-tree-sitter-for-source-relationships.md)). |
+
 Stack decisions are recorded in [ADR 0001](adr/0001-backend-stack.md).
 
 ## Configuration

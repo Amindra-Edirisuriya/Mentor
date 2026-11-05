@@ -47,3 +47,15 @@ Postgres (host port 5433), ADRs 0001–0002. 1 test.
   names (routes, models, controllers, middleware, components, …).
 - `Manifest` now records `main`/`script_lines` so entry-point evidence points at the exact line.
 - 3 new tests (`tests/test_structure.py`).
+
+## Increment 5 — Tree-sitter relationships for JS/TS
+- New dependencies (approved): `tree-sitter`, `tree-sitter-javascript`, `tree-sitter-typescript`.
+  Recorded in ADR 0003.
+- `app/analysis/relationships.py`: imports (ESM, re-export, `require`, dynamic `import()`, relative
+  resolution with extension/index fallback, npm package + Node builtin detection), Express routes
+  (method, path, middleware args, mounts via `use`, `router.route('/x').get()`), Mongoose models
+  (name, fields, `ref` targets). Routes require an Express-created receiver, so client `axios.get`
+  calls aren't reported. Syntax errors are tolerated and listed.
+- `frameworks.apply_usage()` upgrades findings from `declared` to `used` with import evidence.
+- 7 new tests (`tests/test_relationships.py`).
+- Known gap: full route paths across files (mount prefix + router path) aren't joined yet.
