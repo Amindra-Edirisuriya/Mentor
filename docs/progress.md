@@ -28,3 +28,12 @@ Postgres (host port 5433), ADRs 0001–0002. 1 test.
   Output is sorted and deterministic; language stats count only source + test files.
 - 24 new tests (`tests/test_scanner.py`); shared `make_tree` fixture in `tests/conftest.py`.
 - Silenced Starlette's `httpx` deprecation warning in pytest config.
+
+## Increment 3 — Dependency manifests + rule-based framework detection
+- `app/analysis/manifests.py`: parses `package.json` (deps/devDeps/peerDeps, scripts, name),
+  `requirements*.txt` and `pyproject.toml` as data only. Each dependency carries evidence with the
+  line it is declared on. Malformed or oversized manifests produce `parse_error`, not a crash.
+- `app/analysis/frameworks.py`: ~40 declarative rules (package names and/or config-file globs) for
+  React, Express, MongoDB/Mongoose, JWT, bcrypt, Multer, Vite, Tailwind, Django, FastAPI, Jest, etc.
+  Findings are labelled `status="declared"`: a dependency proves intent, not usage.
+- 5 new tests including a MERN-shaped fixture (`tests/test_manifests_frameworks.py`).
