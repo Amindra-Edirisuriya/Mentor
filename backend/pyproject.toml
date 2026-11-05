@@ -29,3 +29,7 @@ include = ["app*"]
 testpaths = ["tests"]
 pythonpath = ["."]
 addopts = "-q"
+filterwarnings = [
+    # Third-party notice from Starlette's TestClient; not actionable for us yet.
+    "ignore:Using `httpx` with `starlette.testclient` is deprecated",
+]

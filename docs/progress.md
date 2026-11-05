@@ -18,3 +18,13 @@ Postgres (host port 5433), ADRs 0001–0002. 1 test.
 - Known gaps: no test for encrypted entries or lying size headers (stdlib `zipfile` can't easily
   write them); the execute-bit test is trivially true on Windows.
 - Also added `.claude/settings.json` (allow tests/pip/docker compose/npm/git add+commit; deny git push, rm -rf).
+
+## Increment 2 — File scanning, classification, language detection
+- `app/analysis/evidence.py`: `Evidence` model + `make_evidence()` with deterministic ids (`ev-<sha1>`).
+- `app/analysis/scanner.py`: `scan_project(root)` walks the tree (no symlinks followed), skips
+  `node_modules`, `.git`, build output etc. (counted in `ignored_dirs`), detects language by
+  extension/filename, classifies files as source/test/config/docs/asset/data/other, sniffs binary
+  files, counts lines (≤2 MB), flags sensitive files (`.env*` except `.env.example`, keys, `.npmrc`).
+  Output is sorted and deterministic; language stats count only source + test files.
+- 24 new tests (`tests/test_scanner.py`); shared `make_tree` fixture in `tests/conftest.py`.
+- Silenced Starlette's `httpx` deprecation warning in pytest config.
