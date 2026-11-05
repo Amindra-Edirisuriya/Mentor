@@ -25,6 +25,8 @@ mainstream, well documented and quick to test.
   is the only place it is configured.
 - **pydantic-settings** for configuration from env vars and a git-ignored `.env`.
 - **pytest** (+ **httpx**, required by FastAPI's `TestClient`) for tests.
+- **python-multipart**, FastAPI's own optional dependency for `UploadFile`/form parsing
+  (added in increment 6 for ZIP uploads).
 - Packaging with **setuptools** via `backend/pyproject.toml` (`pip install -e ".[dev]"`).
 
 ## Consequences

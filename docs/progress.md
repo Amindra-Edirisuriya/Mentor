@@ -59,3 +59,18 @@ Postgres (host port 5433), ADRs 0001–0002. 1 test.
 - `frameworks.apply_usage()` upgrades findings from `declared` to `used` with import evidence.
 - 7 new tests (`tests/test_relationships.py`).
 - Known gap: full route paths across files (mount prefix + router path) aren't joined yet.
+
+## Increment 6 — Report assembly, persistence, endpoints
+- `app/analysis/report.py`: `analyse_project()` builds `AnalysisReport` (summary, scan, manifests,
+  frameworks, structure, relationships, skipped nested archives); deterministic and JSON round-trips.
+  `collect_evidence()` indexes all evidence ids (used for citation checks in increment 7).
+- `app/models.py` + migration `0001`: `projects`, `analysis_runs` (`report` JSONB on Postgres).
+- `app/api/projects.py`: `POST /projects`, `GET /projects`, `GET /projects/{id}`,
+  `GET /projects/{id}/report`. Upload streamed with a size cap; unsafe archives return 400 and
+  leave nothing behind; analysis errors are recorded as a failed run.
+- New dependency: `python-multipart` (FastAPI's own upload parser; noted in ADR 0001).
+- Settings: `STORAGE_DIR`, `MAX_UPLOAD_MB`. Alembic `env.py` now imports models and accepts a
+  URL from the caller (used by the migration test).
+- 11 new tests: report (3), API with SQLite overrides (7), migrations-match-models (1).
+- Verified against the real Docker Postgres: `alembic upgrade head` applied `0001`; a smoke upload
+  stored the report as `jsonb` and JSONB queries worked (test row deleted afterwards).

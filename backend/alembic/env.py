@@ -8,15 +8,15 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
+import app.models  # noqa: F401  (registers tables on Base.metadata)
 from app.config import get_settings
 from app.db import Base
 
-# Import model modules here as they are added so autogenerate can see them.
-
 config = context.config
-config.set_main_option("sqlalchemy.url", get_settings().database_url)
+if not config.get_main_option("sqlalchemy.url"):
+    config.set_main_option("sqlalchemy.url", get_settings().database_url)
 
-if config.config_file_name is not None:
+if config.config_file_name is not None and config.attributes.get("configure_logger", True):
     fileConfig(config.config_file_name)
 
 target_metadata = Base.metadata

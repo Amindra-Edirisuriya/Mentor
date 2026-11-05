@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     app_name: str = "EngiMentor"
     app_env: str = "development"
     database_url: str = "postgresql+psycopg://engimentor:change-me@localhost:5433/engimentor"
+    storage_dir: Path = REPO_ROOT / "storage"
+    max_upload_mb: int = 50
 
 
 @lru_cache

@@ -47,7 +47,23 @@ learning material. The system has two halves with a strict boundary between them
 | `backend/app/analysis/structure.py` | Directory tree, packages + roles, entry points, layer hints. |
 | `backend/app/analysis/relationships.py` | Tree-sitter JS/TS: imports, Express routes, Mongoose models ([ADR 0003](adr/0003-tree-sitter-for-source-relationships.md)). |
 
+| `backend/app/analysis/report.py` | `analyse_project()` → `AnalysisReport` (schema v1); `collect_evidence()` indexes all evidence by id. |
+| `backend/app/models.py` | `projects`, `analysis_runs` (report stored as JSONB). Migration `0001`. |
+| `backend/app/api/projects.py` | Upload + report endpoints (below). |
+
 Stack decisions are recorded in [ADR 0001](adr/0001-backend-stack.md).
+
+## API
+
+| Method & path | Purpose |
+|---|---|
+| `POST /projects` (multipart `file`, optional `name`) | Stream ZIP to `storage/uploads` (size-capped), safe-extract to `storage/projects/<id>/source`, analyse synchronously, persist run + report. 400 for unsafe/non-ZIP, 413 for too large. Unsafe uploads aren't persisted. |
+| `GET /projects` | List projects with their runs. |
+| `GET /projects/{id}` | One project with runs. |
+| `GET /projects/{id}/report` | Latest successful run's report JSON. |
+
+Analysis runs inside the request for Milestone 1. A background worker can replace this later
+without changing the `analysis_runs` model (`status` already supports `running`).
 
 ## Configuration
 
@@ -60,6 +76,8 @@ committed or logged.
 | `APP_ENV` | backend | `development` |
 | `DATABASE_URL` | backend, Alembic | local dev URL (`postgresql+psycopg://...@localhost:5433/engimentor`) |
 | `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` / `POSTGRES_PORT` | docker-compose | `engimentor` / *(required)* / `engimentor` / `5433` |
+| `STORAGE_DIR` | backend | `<repo>/storage` |
+| `MAX_UPLOAD_MB` | backend | `50` |
 
 The Docker database is published on host port **5433** so it doesn't collide with
 a native PostgreSQL service on 5432 (inside the container it still listens on 5432).
