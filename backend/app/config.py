@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://engimentor:change-me@localhost:5433/engimentor"
     storage_dir: Path = REPO_ROOT / "storage"
     max_upload_mb: int = 50
+    llm_provider: str = "fake"  # only "fake" until a real provider is approved (CLAUDE.md)
 
 
 @lru_cache

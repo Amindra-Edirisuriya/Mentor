@@ -36,6 +36,7 @@ class AnalysisRun(Base):
     status: Mapped[str] = mapped_column(String(20))  # running | succeeded | failed
     error: Mapped[str | None] = mapped_column(Text)
     report: Mapped[dict[str, Any] | None] = mapped_column(JSONDocument)
+    summary: Mapped[dict[str, Any] | None] = mapped_column(JSONDocument)  # validated LLM claims
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 

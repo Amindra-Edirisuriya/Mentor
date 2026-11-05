@@ -61,6 +61,22 @@ Stack decisions are recorded in [ADR 0001](adr/0001-backend-stack.md).
 | `GET /projects` | List projects with their runs. |
 | `GET /projects/{id}` | One project with runs. |
 | `GET /projects/{id}/report` | Latest successful run's report JSON. |
+| `POST /projects/{id}/summary` | Generate evidence-grounded claims for the latest report (fake LLM by default) and store them. |
+| `GET /projects/{id}/summary` | Stored summary (validated claims + rejected claims). |
+
+## Intelligence layer (increment 7)
+
+| Path | Purpose |
+|---|---|
+| `backend/app/security/redaction.py` | Secret detection/redaction applied to snippets and the full prompt. |
+| `backend/app/intelligence/llm.py` | `LLMClient` protocol; `FakeLLMClient` (deterministic, offline). |
+| `backend/app/intelligence/snippets.py` | Redacted code context around cited evidence; sensitive files are never read. |
+| `backend/app/intelligence/summary.py` | Condensed report + snippets → prompt → validated `ProjectSummary`. |
+| `backend/app/intelligence/validation.py` | Citation validation and verified/inferred/unknown labelling policy. |
+
+`LLM_PROVIDER` defaults to `fake`; any other value returns 503 until a real provider is approved
+and recorded in an ADR. A test enforces that `app/analysis` never imports `app.intelligence` or
+an LLM SDK.
 
 Analysis runs inside the request for Milestone 1. A background worker can replace this later
 without changing the `analysis_runs` model (`status` already supports `running`).
@@ -78,6 +94,7 @@ committed or logged.
 | `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` / `POSTGRES_PORT` | docker-compose | `engimentor` / *(required)* / `engimentor` / `5433` |
 | `STORAGE_DIR` | backend | `<repo>/storage` |
 | `MAX_UPLOAD_MB` | backend | `50` |
+| `LLM_PROVIDER` | backend | `fake` |
 
 The Docker database is published on host port **5433** so it doesn't collide with
 a native PostgreSQL service on 5432 (inside the container it still listens on 5432).

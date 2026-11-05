@@ -74,3 +74,19 @@ Postgres (host port 5433), ADRs 0001–0002. 1 test.
 - 11 new tests: report (3), API with SQLite overrides (7), migrations-match-models (1).
 - Verified against the real Docker Postgres: `alembic upgrade head` applied `0001`; a smoke upload
   stored the report as `jsonb` and JSONB queries worked (test row deleted afterwards).
+
+## Increment 7 — Evidence-grounded LLM summary (fake client)
+- `app/security/redaction.py`: redacts private keys, AWS/GitHub/Slack/Stripe/Google/LLM keys,
+  JWTs, URL credentials and `secret|password|token|api_key… = literal` assignments, while leaving
+  code references (`process.env.X`, `config.jwtSecret`, `verifyToken`) intact.
+- `app/intelligence/`: `LLMClient` protocol + deterministic `FakeLLMClient` (no key needed);
+  `snippets.py` (context around cited lines; never sensitive/binary files; path stays in root;
+  size caps); `summary.py` (condensed report with evidence ids + snippets → prompt, redacted again
+  as a whole → claims); `validation.py` (unknown ids stripped; all-invalid or uncited
+  verified/inferred claims rejected; partially-invalid verified claims downgraded to inferred;
+  bad labels → unknown). No free-text overview: every statement is a cited claim.
+- `POST /projects/{id}/summary` (generate + store), `GET /projects/{id}/summary`. Migration `0002`
+  adds `analysis_runs.summary` (JSONB). `LLM_PROVIDER` other than `fake` → 503 until a provider
+  is approved.
+- 25 new tests: redaction (17), validation/fake summary/no-secrets-in-prompt/hallucination
+  containment/analysis→intelligence import boundary (6), summary API (2).
