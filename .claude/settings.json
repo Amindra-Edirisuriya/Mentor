@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pytest *)",
+      "Bash(python -m pytest *)",
+      "Bash(.venv/Scripts/python -m pytest *)",
+      "Bash(backend/.venv/Scripts/python -m pytest *)",
+      "Bash(.venv/Scripts/pytest *)",
+      "Bash(backend/.venv/Scripts/pytest *)",
+      "Bash(pip install *)",
+      "Bash(python -m pip install *)",
+      "Bash(.venv/Scripts/python -m pip install *)",
+      "Bash(backend/.venv/Scripts/python -m pip install *)",
+      "Bash(docker compose *)",
+      "Bash(npm *)",
+      "Bash(npx vitest *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "PowerShell(pytest *)",
+      "PowerShell(pip install *)",
+      "PowerShell(docker compose *)",
+      "PowerShell(npm *)",
+      "PowerShell(git add *)",
+      "PowerShell(git commit *)"
+    ],
+    "deny": [
+      "Bash(git push *)",
+      "Bash(git push)",
+      "Bash(rm -rf *)",
+      "Bash(rm -fr *)",
+      "PowerShell(git push *)",
+      "PowerShell(git push)",
+      "PowerShell(rm -rf *)"
+    ]
+  }
+}
