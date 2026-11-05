@@ -32,7 +32,10 @@ class Manifest(BaseModel):
     path: str
     ecosystem: str
     package_name: str | None = None
+    main: str | None = None  # package.json "main"
+    main_line: int = 0
     scripts: dict[str, str] = Field(default_factory=dict)
+    script_lines: dict[str, int] = Field(default_factory=dict)
     dependencies: list[Dependency] = Field(default_factory=list)
     parse_error: str | None = None
 
@@ -70,9 +73,17 @@ def parse_package_json(path: str, text: str) -> Manifest:
     lines = text.splitlines()
     if isinstance(data.get("name"), str):
         manifest.package_name = data["name"]
+    if isinstance(data.get("main"), str):
+        manifest.main = data["main"]
+        manifest.main_line = _find_line(lines, re.compile(r'^\s*"main"\s*:'))
     scripts = data.get("scripts")
     if isinstance(scripts, dict):
         manifest.scripts = {k: v for k, v in scripts.items() if isinstance(v, str)}
+        header = _find_line(lines, re.compile(r'"scripts"\s*:'))
+        manifest.script_lines = {
+            k: _find_line(lines, re.compile(rf'^\s*"{re.escape(k)}"\s*:'), max(header - 1, 0))
+            for k in manifest.scripts
+        }
 
     for section, dev in (("dependencies", False), ("devDependencies", True), ("peerDependencies", False)):
         deps = data.get(section)

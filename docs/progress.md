@@ -37,3 +37,13 @@ Postgres (host port 5433), ADRs 0001–0002. 1 test.
   React, Express, MongoDB/Mongoose, JWT, bcrypt, Multer, Vite, Tailwind, Django, FastAPI, Jest, etc.
   Findings are labelled `status="declared"`: a dependency proves intent, not usage.
 - 5 new tests including a MERN-shaped fixture (`tests/test_manifests_frameworks.py`).
+
+## Increment 4 — Project structure representation
+- `app/analysis/structure.py`: `build_structure(scan, manifests)` returns a depth-limited directory
+  tree with recursive file counts, the ZIP's single wrapping folder (`root_prefix`), one
+  `PackageUnit` per valid manifest (role frontend/backend/fullstack/unknown with dependency
+  evidence), entry points (`main`, then `node|nodemon|ts-node … file` in start/dev scripts, then
+  conventional names; only files that exist count), and layer hints from conventional directory
+  names (routes, models, controllers, middleware, components, …).
+- `Manifest` now records `main`/`script_lines` so entry-point evidence points at the exact line.
+- 3 new tests (`tests/test_structure.py`).
