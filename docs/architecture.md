@@ -81,6 +81,20 @@ an LLM SDK.
 Analysis runs inside the request for Milestone 1. A background worker can replace this later
 without changing the `analysis_runs` model (`status` already supports `running`).
 
+## Frontend (increment 8)
+
+`frontend/`: Vite + React 18 + TypeScript (strict, `noUncheckedIndexedAccess`) + Tailwind 3.
+The dev server proxies `/api/*` to the backend, so the backend needs no CORS configuration.
+
+| Path | Purpose |
+|---|---|
+| `src/api.ts` | Typed fetch wrappers for the endpoints above. |
+| `src/types.ts` | TypeScript mirror of the report/summary JSON. |
+| `src/lib/report.ts` | Pure helpers: location formatting, evidence index, route grouping, language shares (unit-tested). |
+| `src/components/UploadForm.tsx` | ZIP upload. |
+| `src/components/ReportView.tsx` | Stats, technologies (used/declared + evidence), packages/entry points, languages, routes, models, notes (sensitive files, skipped archives, syntax errors). |
+| `src/components/SummaryPanel.tsx` | Generate/show validated claims with evidence chips; rejected claims listed. |
+
 ## Configuration
 
 All configuration comes from environment variables, optionally loaded from a

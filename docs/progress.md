@@ -90,3 +90,17 @@ Postgres (host port 5433), ADRs 0001–0002. 1 test.
   is approved.
 - 25 new tests: redaction (17), validation/fake summary/no-secrets-in-prompt/hallucination
   containment/analysis→intelligence import boundary (6), summary API (2).
+
+## Increment 8 — Minimal frontend (upload + report view)
+- `frontend/`: Vite 5 + React 18 + strict TypeScript + Tailwind 3, written by hand (no interactive
+  scaffolder). Dev server proxies `/api` → FastAPI on `:8000`.
+- Upload form, project list with run status, report view (stats, technologies with used/declared
+  badges and `file:line` evidence chips, packages and entry points, language bars, routes grouped
+  by file with middleware, Mongoose models, notes on sensitive files and skipped archives) and a
+  summary panel (generate, labelled claims with evidence chips, rejected claims, redaction count).
+- 6 Vitest tests for the pure helpers in `src/lib/report.ts`; `npm run build` type-checks and builds.
+- Manual integration check: uvicorn + Vite dev server; `/api/health`, `/api/projects` and the page
+  served correctly through the proxy (servers stopped afterwards). Port 5173 was taken by another
+  local app, so the check used 5180; the Vite config falls back to the next free port.
+- Not covered: no component/DOM tests (would need jsdom + Testing Library) and no browser check of
+  the upload flow.

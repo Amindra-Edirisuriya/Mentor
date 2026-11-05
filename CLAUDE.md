@@ -60,3 +60,6 @@ Input: ZIP uploads (Milestone 1), GitHub repos (later).
   clashing with a native Windows PostgreSQL service; `POSTGRES_PORT` and `DATABASE_URL` in `.env` must agree
 - Run API: `cd backend && uvicorn app.main:app --reload` (health: `GET /health`)
 - Migrations: `cd backend && alembic upgrade head` / `alembic revision --autogenerate -m "msg"`
+- Frontend setup: `cd frontend && npm install`
+- Frontend dev: `cd frontend && npm run dev` (proxies `/api` → `localhost:8000`; if 5173 is taken Vite picks the next free port)
+- Frontend tests / checks: `cd frontend && npm test` · `npm run build` (runs `tsc --noEmit` + Vite build)
