@@ -333,9 +333,10 @@ def extract_relationships(root: Path, scan: ScanResult) -> CodeRelationships:
     result = CodeRelationships()
     for record in scan.files:
         suffix = PurePosixPath(record.path).suffix.lower()
+        # Config files (vite.config.js, ...) are parsed too: their imports are real usage.
         if (
             suffix not in _LANG_BY_SUFFIX
-            or record.category not in (FileCategory.SOURCE, FileCategory.TEST)
+            or record.category not in (FileCategory.SOURCE, FileCategory.TEST, FileCategory.CONFIG)
             or record.is_binary
             or record.size > MAX_PARSE_BYTES
         ):

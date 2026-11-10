@@ -174,7 +174,11 @@ export function ReportView({ projectId, report }: { projectId: string; report: A
               <li>Nested archives were skipped: {report.skipped_nested_archives.join(", ")}</li>
             )}
             {report.relationships.files_with_syntax_errors.length > 0 && (
-              <li>Files with syntax errors: {report.relationships.files_with_syntax_errors.join(", ")}</li>
+              <li>
+                Only partly parsed (the rest of each file was still analysed; this can be a parser limitation, e.g. a
+                bare <code>&amp;</code> in JSX text, not necessarily a bug in your code):{" "}
+                {report.relationships.files_with_syntax_errors.map((p) => stripPrefix(p, prefix)).join(", ")}
+              </li>
             )}
           </ul>
         </Section>

@@ -34,7 +34,11 @@ RULES: tuple[Rule, ...] = (
     Rule("Next.js", "frontend", ("next",), ("next.config.*",)),
     Rule("React Router", "frontend", ("react-router", "react-router-dom")),
     Rule("Redux", "frontend", ("redux", "@reduxjs/toolkit")),
-    Rule("Tailwind CSS", "styling", ("tailwindcss",), ("tailwind.config.*",)),
+    # Tailwind v4 is wired in through a bundler plugin instead of tailwind.config.*.
+    Rule(
+        "Tailwind CSS", "styling",
+        ("tailwindcss", "@tailwindcss/vite", "@tailwindcss/postcss"), ("tailwind.config.*",),
+    ),
     Rule("Vite", "build", ("vite",), ("vite.config.*",)),
     Rule("Webpack", "build", ("webpack",), ("webpack.config.*",)),
     # Backend (Node)
