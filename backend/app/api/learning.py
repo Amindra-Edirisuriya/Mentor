@@ -34,6 +34,10 @@ from app.security.redaction import redact
 
 router = APIRouter(prefix="/projects/{project_id}/learning", tags=["learning"])
 MASTERED_AT = 75
+NOTHING_DETECTED = (
+    "VIFE found no frameworks, routes or models in this project, so there is nothing to ground this in. "
+    "Upload the whole project folder (with package.json), then click Re-analyse."
+)
 
 
 class PracticeIn(BaseModel):
@@ -169,7 +173,7 @@ def start_practice(
 ) -> dict[str, Any]:
     project, run, report, concepts = _context(project_id, user, db)
     if not concepts:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "No concepts were detected in this project to practise.")
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, NOTHING_DETECTED)
     if body.concept_key:
         targets = [_concept_or_404(concepts, body.concept_key)]
     else:  # focus on gaps: weakest / unpractised concepts first
@@ -267,6 +271,8 @@ def create_presentation(
     client: LLMClient = Depends(get_llm_client),
 ) -> dict[str, Any]:
     project, run, report, concepts = _context(project_id, user, db)
+    if not concepts and not report.get("frameworks"):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, NOTHING_DETECTED)
     deck = _call(generate_presentation, report, concepts, body.minutes, client)
     if not deck.slides:
         raise HTTPException(status.HTTP_502_BAD_GATEWAY, "The AI didn't return any slides grounded in your code. Try again.")

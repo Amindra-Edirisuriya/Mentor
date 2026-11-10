@@ -1,16 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { getReport, listProjects } from "../api";
+import { getReport, listProjects, reanalyseProject } from "../api";
 import { AppFooter, AppHeader } from "../components/AppHeader";
 import { LearnPanel } from "../components/learning/LearnPanel";
+import { MindMapPanel } from "../components/learning/MindMapPanel";
 import { PracticePanel } from "../components/learning/PracticePanel";
 import { PresentationPanel } from "../components/learning/PresentationPanel";
 import { ProgressPanel } from "../components/learning/ProgressPanel";
 import { ReportView } from "../components/ReportView";
-import { Alert, Badge, EmptyState, ReportSkeleton, Skeleton } from "../components/ui";
+import { Alert, Badge, EmptyState, ReportSkeleton, Skeleton, Spinner } from "../components/ui";
 import { UploadForm } from "../components/UploadForm";
 import { friendlyError } from "../lib/errors";
-import { buildEvidenceIndex } from "../lib/report";
+import { analysisGap, buildEvidenceIndex } from "../lib/report";
 import type { AnalysisReport, Project } from "../types";
 
 function ProjectList({
@@ -64,6 +65,7 @@ function ProjectList({
 
 const TABS = [
   { id: "report", label: "Report" },
+  { id: "mindmap", label: "Mind map" },
   { id: "learn", label: "Learn" },
   { id: "practice", label: "Practice & viva" },
   { id: "progress", label: "Progress" },
@@ -100,6 +102,8 @@ export function DashboardPage() {
   const [selected, setSelected] = useState<string | null>(null);
   const [report, setReport] = useState<AnalysisReport | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
+  const [reanalysing, setReanalysing] = useState(false);
 
   const refresh = useCallback(async () => {
     try {
@@ -127,7 +131,24 @@ export function DashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, [selected]);
+  }, [selected, reloadKey]);
+
+  const reanalyse = async () => {
+    if (!selected) return;
+    setReanalysing(true);
+    setError(null);
+    try {
+      const run = await reanalyseProject(selected);
+      if (run.status !== "succeeded") setError(run.error ?? "Re-analysis failed.");
+      await refresh();
+      setReloadKey((k) => k + 1);
+    } catch (err) {
+      setError(friendlyError(err, "Couldn't re-analyse this project."));
+    } finally {
+      setReanalysing(false);
+    }
+  };
+  const gap = report ? analysisGap(report) : null;
 
   const selectedName = projects.find((p) => p.id === selected)?.name;
   const evidenceCtx = useMemo(
@@ -164,7 +185,27 @@ export function DashboardPage() {
         <main className="min-w-0 flex-1 space-y-4">
           {error && <Alert onDismiss={() => setError(null)}>{error}</Alert>}
           {selected && selectedName && (
-            <h2 className="truncate text-xl font-bold tracking-tight text-slate-900">{selectedName}</h2>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="min-w-0 truncate text-xl font-bold tracking-tight text-slate-900">{selectedName}</h2>
+              <button
+                onClick={() => void reanalyse()}
+                disabled={reanalysing}
+                title="Run the analysis again on your stored upload"
+                className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 disabled:opacity-50"
+              >
+                {reanalysing && <Spinner className="h-3 w-3" />}
+                {reanalysing ? "Re-analysing…" : "Re-analyse"}
+              </button>
+            </div>
+          )}
+          {gap && (
+            <div role="status" className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900 ring-1 ring-inset ring-amber-600/20">
+              <p className="font-semibold">Nothing to learn from yet</p>
+              <p className="mt-1">
+                {gap} Learning, viva questions, slides and the mind map are built only from what the analysis finds, so they'll be
+                empty until then.
+              </p>
+            </div>
           )}
           {!selected ? (
             <EmptyState
@@ -183,6 +224,9 @@ export function DashboardPage() {
               <Tabs active={tab} onChange={setTab} />
               <div role="tabpanel">
                 {tab === "report" && <ReportView projectId={selected} report={report} />}
+                {tab === "mindmap" && (
+                  <MindMapPanel projectId={selected} projectName={selectedName ?? "Project"} report={report} ctx={evidenceCtx} />
+                )}
                 {tab === "learn" && (
                   <LearnPanel
                     projectId={selected}

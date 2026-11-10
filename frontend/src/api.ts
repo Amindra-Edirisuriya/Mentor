@@ -90,6 +90,10 @@ export function uploadProject(file: File, name?: string): Promise<ProjectCreated
 
 export const listProjects = () => request<Project[]>("/projects");
 
+/** Re-run analysis on the stored upload, so detector improvements reach older projects. */
+export const reanalyseProject = (projectId: string) =>
+  request<ProjectCreated>(`/projects/${projectId}/reanalyse`, { method: "POST" });
+
 export const getReport = (projectId: string) =>
   request<{ run_id: string; report: AnalysisReport }>(`/projects/${projectId}/report`);
 

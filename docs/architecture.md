@@ -43,7 +43,7 @@ learning material. The system has two halves with a strict boundary between them
 | `backend/app/analysis/evidence.py` | `Evidence` model with deterministic ids. |
 | `backend/app/analysis/scanner.py` | File walk, classification, language detection, sensitive-file flags. |
 | `backend/app/analysis/manifests.py` | `package.json` / `requirements.txt` / `pyproject.toml` parsing with line evidence. |
-| `backend/app/analysis/frameworks.py` | Rule-based technology detection (`declared` → `used`). |
+| `backend/app/analysis/frameworks.py` | Rule-based technology detection (`declared` → `used`). An import of a known package is evidence on its own, so uploads without a manifest (just `src/`) still detect their stack. |
 | `backend/app/analysis/structure.py` | Directory tree, packages + roles, entry points, layer hints. |
 | `backend/app/analysis/relationships.py` | Tree-sitter JS/TS: imports, Express routes, Mongoose models ([ADR 0003](adr/0003-tree-sitter-for-source-relationships.md)). |
 
@@ -71,6 +71,7 @@ another user's project id returns 404. See [ADR 0004](adr/0004-accounts-and-cook
 | `GET /projects` | List projects with their runs. |
 | `GET /projects/{id}` | One project with runs. |
 | `GET /projects/{id}/report` | Latest successful run's report JSON. |
+| `POST /projects/{id}/reanalyse` | Re-run analysis on the stored source as a new run (no re-upload), so detector improvements reach older projects. 404 if the source is gone. |
 | `POST /projects/{id}/summary` | Generate evidence-grounded claims for the latest report (fake LLM by default) and store them. |
 | `GET /projects/{id}/summary` | Stored summary (validated claims + rejected claims). |
 
@@ -116,6 +117,9 @@ Tables: `learning_outputs` (explanations, question sets with hidden key points, 
 | `GET progress` | Overall, per-concept mastery, daily history, recent answers. |
 | `POST/GET presentation` (`minutes`) | Evidence-cited slides with speaker notes. |
 
+`practice` and `presentation` return 400 with an actionable message when the analysis found nothing
+(no frameworks, routes or models) instead of asking the LLM for content it couldn't cite.
+
 Providers: `app/intelligence/llm.py` has `FakeLLMClient` and `OpenAICompatibleClient` (Ollama,
 Groq, Gemini, OpenRouter; see [ADR 0005](adr/0005-free-llm-providers.md)). Provider errors
 return 502 with an actionable message.
@@ -135,7 +139,9 @@ Routes (`react-router-dom`): `/` landing, `/login`, `/register`, `/forgot-passwo
 | `src/auth/guards.tsx` | `RequireAuth` (redirects to `/login` and back) and `PublicOnly`. |
 | `src/auth/AuthLayout.tsx` | Split-screen layout for the sign-in, sign-up and password pages. |
 | `src/pages/*` | Landing, Login, Register, Forgot/Reset password, Dashboard, Account. |
-| `src/components/learning/*` | Dashboard tabs: Learn (pathway + explanations + resources), Practice & viva (timer, voice answers), Progress (mastery + daily chart), Presentation (slides, notes, rehearsal timer, Markdown/PDF export). |
+| `src/components/learning/*` | Dashboard tabs: Learn (pathway + explanations + resources), Practice & viva (timer, voice answers), Progress (mastery + daily chart), Presentation (slides, notes, rehearsal timer, Markdown/PDF export), Mind map. |
+| `src/lib/mindmap.ts` + `MindMapPanel.tsx` | Deterministic mind map (stack groups, concepts, routes by file, models) built in the browser from the report + pathway; no LLM. Every node carries evidence ids; SVG with inline colours so it downloads as-is. |
+| `analysisGap` in `src/lib/report.ts` | Explains an empty analysis (no code, no manifest, unsupported language) above the tabs. |
 | `src/lib/learning.ts` | Score tones, clock formatting, deck → Markdown (unit-tested). |
 | `src/components/forms.tsx` | Text and password fields (show/hide, strength meter), submit button, notices. |
 | `src/lib/password.ts`, `src/lib/redirect.ts` | Password policy mirrored from the backend, and same-site redirect check (unit-tested). |

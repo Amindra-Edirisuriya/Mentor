@@ -92,17 +92,26 @@ class FrameworkFinding(BaseModel):
 def apply_usage(
     findings: list[FrameworkFinding], imported_packages: dict[str, list[Evidence]]
 ) -> list[FrameworkFinding]:
-    """Upgrade findings to ``used`` when source code imports one of the rule's packages."""
-    rules = {r.name: r for r in RULES}
-    for finding in findings:
+    """Upgrade findings to ``used`` when source code imports one of the rule's packages.
+
+    An import is evidence on its own: a ZIP of just ``src/`` has no manifest, but
+    ``import React from "react"`` still shows React is used, so such rules get a new finding.
+    """
+    by_name = {f.name: f for f in findings}
+    for rule in RULES:
         usage: list[Evidence] = []
-        for package in rules[finding.name].packages:
+        for package in rule.packages:
             usage.extend(imported_packages.get(package, []))
-        if usage:
-            finding.status = "used"
-            known = {e.id for e in finding.evidence}
-            finding.evidence += [e for e in usage if e.id not in known][:MAX_USAGE_EVIDENCE]
-    return findings
+        if not usage:
+            continue
+        finding = by_name.get(rule.name)
+        if finding is None:
+            finding = by_name[rule.name] = FrameworkFinding(name=rule.name, category=rule.category, evidence=[])
+        finding.status = "used"
+        known = {e.id for e in finding.evidence}
+        finding.evidence += [e for e in usage if e.id not in known][:MAX_USAGE_EVIDENCE]
+    order = {r.name: i for i, r in enumerate(RULES)}
+    return sorted(by_name.values(), key=lambda f: order[f.name])
 
 
 def detect_frameworks(manifests: list[Manifest], scan: ScanResult) -> list[FrameworkFinding]:

@@ -75,18 +75,24 @@ def create_project(
         upload_path.unlink(missing_ok=True)
 
     project = Project(id=project_id, owner_id=user.id, name=_clean_name(name or Path(original).stem), original_filename=original)
-    run = AnalysisRun(project=project, status="running")
-    db.add_all([project, run])
+    db.add(project)
+    return _run_analysis(db, project, source_dir, extraction.skipped_nested_archives)
+
+
+def _run_analysis(db: Session, project: Project, source_dir: Path, skipped: list[str]) -> ProjectCreated:
+    """Analyse the extracted source into a new run. Uploaded code is only read, never run."""
+    run = AnalysisRun(project=project, status="running", created_at=datetime.now(UTC))
+    db.add(run)
     db.flush()
 
     summary: dict[str, Any] | None = None
     try:
-        report = analyse_project(source_dir, extraction.skipped_nested_archives)
+        report = analyse_project(source_dir, skipped)
         run.report = report.model_dump(mode="json")
         run.status = "succeeded"
         summary = run.report["summary"]
     except Exception:  # analysis bugs must not lose the upload record
-        logger.exception("Analysis failed for project %s", project_id)
+        logger.exception("Analysis failed for project %s", project.id)
         run.status = "failed"
         run.error = "Analysis failed due to an internal error."
     run.finished_at = datetime.now(UTC)
@@ -94,6 +100,22 @@ def create_project(
     return ProjectCreated(
         project_id=project.id, run_id=run.id, status=run.status, error=run.error, summary=summary
     )
+
+
+@router.post("/{project_id}/reanalyse", response_model=ProjectCreated)
+def reanalyse_project(
+    project_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
+) -> ProjectCreated:
+    """Re-run analysis on the stored source, so detector improvements reach old uploads."""
+    project = get_project_or_404(db, project_id, user)
+    source_dir = project_source_dir(settings, project.id)
+    if not source_dir.is_dir():
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "The uploaded files are no longer stored. Upload the ZIP again.")
+    previous = next((r.report for r in reversed(project.runs) if r.report), None) or {}
+    return _run_analysis(db, project, source_dir, list(previous.get("skipped_nested_archives", [])))
 
 
 @router.get("", response_model=list[ProjectOut])

@@ -299,3 +299,24 @@ def test_fake_grade_rewards_key_points() -> None:
     assert fake.respond({**ctx, "answer": "dunno"})["score"] == 0
     assert fake.respond({**ctx, "answer": "it is REST routing using jsonwebtoken"})["score"] == 100
     assert extract_context("x <context>{\"a\": 1}</context> y") == {"a": 1}
+
+
+def test_empty_project_explains_why_instead_of_blaming_the_ai(client: TestClient) -> None:
+    """A ZIP with no detectable stack gets a clear 400, not a generic 'AI returned nothing' 502."""
+    response = client.post("/projects", files={"file": ("doc.zip", zip_bytes({"notes/readme.md": "# hi\n"}), "application/zip")})
+    base = _base(response.json()["project_id"])
+    for path, body in ((f"{base}/presentation", {"minutes": 5}), (f"{base}/practice", {"mode": "viva"})):
+        r = client.post(path, json=body)
+        assert r.status_code == 400, (path, r.text)
+        assert "Re-analyse" in r.json()["detail"]
+
+
+def test_source_only_upload_gets_concepts_slides_and_viva(client: TestClient) -> None:
+    """No package.json: imports alone must be enough to learn from (the style-files case)."""
+    files = {"src/app/page.tsx": 'import { useState } from "react";\nimport axios from "axios";\n'
+                                 "export default function P() { return null; }\n"}
+    response = client.post("/projects", files={"file": ("src.zip", zip_bytes(files), "application/zip")})
+    base = _base(response.json()["project_id"])
+    assert {"components", "http-client"} <= {c["key"] for c in client.get(f"{base}/pathway").json()["concepts"]}
+    assert client.post(f"{base}/presentation", json={"minutes": 5}).json()["slides"]
+    assert client.post(f"{base}/practice", json={"mode": "viva", "count": 3}).json()["questions"]

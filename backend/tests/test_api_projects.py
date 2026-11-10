@@ -80,3 +80,29 @@ def test_analysis_failure_is_recorded(client: TestClient, monkeypatch) -> None:
     body = response.json()
     assert body["status"] == "failed" and "internal error" in body["error"]
     assert client.get(f"/projects/{body['project_id']}/report").status_code == 404
+
+
+def test_reanalyse_uses_stored_source_and_becomes_latest_run(client: TestClient, test_settings: Settings) -> None:
+    body = upload(client, zip_bytes({"src/app.js": "const x = 1;\n"})).json()
+    project_id = body["project_id"]
+    assert client.get(f"/projects/{project_id}/report").json()["report"]["summary"]["frameworks_used"] == []
+
+    # Simulate a detector improvement by changing what the stored source contains.
+    source = test_settings.storage_dir / "projects" / project_id / "source"
+    (source / "src/app.js").write_text('import React from "react";\n', encoding="utf-8")
+
+    again = client.post(f"/projects/{project_id}/reanalyse")
+    assert again.status_code == 200, again.text
+    assert again.json()["status"] == "succeeded" and again.json()["run_id"] != body["run_id"]
+    report = client.get(f"/projects/{project_id}/report").json()
+    assert report["run_id"] == again.json()["run_id"]
+    assert report["report"]["summary"]["frameworks_used"] == ["React"]
+
+
+def test_reanalyse_without_stored_source_is_404(client: TestClient, test_settings: Settings) -> None:
+    import shutil
+
+    project_id = upload(client, zip_bytes({"a.js": "x"})).json()["project_id"]
+    shutil.rmtree(test_settings.storage_dir / "projects" / project_id / "source")
+    assert client.post(f"/projects/{project_id}/reanalyse").status_code == 404
+    assert client.post(f"/projects/{uuid.uuid4()}/reanalyse").status_code == 404

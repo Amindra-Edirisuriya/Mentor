@@ -105,3 +105,34 @@ def test_detect_frameworks_mern_project(make_tree) -> None:
     assert vite_files == {"client/package.json", "client/vite.config.js"}
     express_ev = findings["Express"].evidence[0]
     assert express_ev.file_path == "server/package.json" and express_ev.line_start > 0
+
+
+def test_imports_alone_detect_frameworks_without_a_manifest(make_tree) -> None:
+    """A ZIP of just the source folder (no package.json) still shows what the code uses."""
+    from app.analysis.concepts import derive_concepts
+    from app.analysis.report import analyse_project
+
+    root = make_tree({
+        "src/app/layout.tsx": 'import Link from "next/link";\nimport { useState } from "react";\n',
+        "src/api.ts": 'import axios from "axios";\nexport const get = () => axios.get("/x");\n',
+    })
+    report = analyse_project(root).model_dump(mode="json")
+    found = {f["name"]: f for f in report["frameworks"]}
+
+    assert {"React", "Next.js", "Axios"} <= set(found)
+    assert all(f["status"] == "used" for f in found.values())
+    react_ev = found["React"]["evidence"][0]
+    assert react_ev["file_path"] == "src/app/layout.tsx" and react_ev["line_start"] == 2
+    assert "Vue" not in found
+    assert {"components", "http-client"} <= {c.key for c in derive_concepts(report)}
+
+
+def test_frameworks_keep_rule_order_after_usage(make_tree) -> None:
+    from app.analysis.frameworks import RULES, apply_usage
+    from app.analysis.evidence import make_evidence
+
+    imports = {"axios": [make_evidence("ts-imports", "a.js", 1, detail="import axios")],
+               "react": [make_evidence("ts-imports", "b.js", 1, detail="import react")]}
+    names = [f.name for f in apply_usage([], imports)]
+    order = [r.name for r in RULES]
+    assert names == sorted(names, key=order.index) == ["React", "Axios"]
