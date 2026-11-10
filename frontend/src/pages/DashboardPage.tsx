@@ -49,7 +49,7 @@ function ProjectList({
               aria-current={active ? "true" : undefined}
               className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm transition ${
                 active
-                  ? "bg-gradient-to-r from-brand-violet/10 to-brand-cyan/10 font-medium text-brand-indigo ring-1 ring-inset ring-brand-violet/30"
+                  ? "bg-brand-mist font-medium text-brand-violet ring-1 ring-inset ring-brand-violet/30"
                   : "text-slate-700 hover:bg-slate-100"
               }`}
             >

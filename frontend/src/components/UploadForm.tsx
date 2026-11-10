@@ -67,7 +67,7 @@ export function UploadForm({ onUploaded }: { onUploaded: (created: ProjectCreate
         onDrop={onDrop}
         className={`flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed px-4 py-6 text-center transition ${
           dragging
-            ? "border-brand-cyan bg-cyan-50/60"
+            ? "border-brand-violet bg-brand-mist/70"
             : invalid
               ? "border-rose-300 bg-rose-50/50"
               : "border-slate-300 bg-slate-50 hover:border-brand-violet/60 hover:bg-violet-50/40"

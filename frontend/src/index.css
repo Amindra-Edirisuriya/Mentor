@@ -2,11 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  body {
+    @apply bg-brand-bg font-sans text-brand-ink antialiased;
+    background-image:
+      radial-gradient(circle at 12% 8%, rgba(147, 197, 253, 0.28), transparent 34rem),
+      radial-gradient(circle at 86% 10%, rgba(139, 92, 246, 0.22), transparent 36rem),
+      radial-gradient(circle at 50% 90%, rgba(244, 114, 182, 0.10), transparent 40rem);
+    background-attachment: fixed;
+  }
+  ::selection {
+    @apply bg-brand-violet/20;
+  }
+}
+
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-brand-violet via-brand-indigo to-brand-blue px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-brand-indigo/30 transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100;
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-brand-violet px-5 py-2 text-sm font-semibold text-white shadow-glow transition duration-200 hover:-translate-y-0.5 hover:bg-gradient-to-r hover:from-brand-deep hover:via-brand-violet hover:to-brand-bright hover:shadow-glow-lg active:scale-[.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-violet/40 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border-[1.5px] border-brand-violet/25 bg-white/70 px-5 py-2 text-sm font-semibold text-brand-violet transition duration-200 hover:-translate-y-0.5 hover:bg-white hover:shadow-glow active:scale-[.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-violet/40;
   }
   .card {
-    @apply rounded-2xl border border-slate-200/80 bg-white shadow-sm;
+    @apply rounded-2xl border border-white/70 bg-white/80 shadow-card backdrop-blur-xl;
   }
+  .glass-pill {
+    @apply inline-flex items-center gap-2 rounded-full border border-brand-violet/20 bg-white/75 px-3.5 py-1.5 text-xs font-medium text-brand-deep shadow-card backdrop-blur;
+  }
+  .text-gradient {
+    @apply bg-gradient-to-br from-brand-ink via-brand-indigo to-[#8b5cf6] bg-clip-text text-transparent;
+  }
+  .eyebrow {
+    @apply font-mono text-xs font-medium uppercase tracking-[0.18em] text-brand-violet;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
 }

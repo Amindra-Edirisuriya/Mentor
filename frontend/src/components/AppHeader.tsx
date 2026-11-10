@@ -42,9 +42,9 @@ function UserMenu() {
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 text-sm text-slate-200 transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan"
+        className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 text-sm text-brand-ink transition hover:bg-brand-mist focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-violet/40"
       >
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-brand-violet to-brand-cyan text-xs font-bold text-white">
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-brand-deep via-brand-violet to-brand-bright text-xs font-bold text-white">
           {initials(user.name)}
         </span>
         <span className="hidden max-w-[10rem] truncate sm:block">{user.name}</span>
@@ -53,15 +53,15 @@ function UserMenu() {
         </svg>
       </button>
       {open && (
-        <div role="menu" className="absolute right-0 z-20 mt-2 w-60 overflow-hidden rounded-xl border border-slate-200 bg-white text-slate-700 shadow-lg">
+        <div role="menu" className="absolute right-0 z-20 mt-2 w-60 overflow-hidden rounded-2xl border border-brand-line bg-white text-slate-700 shadow-soft">
           <div className="border-b border-slate-100 px-4 py-3">
             <p className="truncate text-sm font-semibold text-slate-900">{user.name}</p>
             <p className="truncate text-xs text-slate-500">{user.email}</p>
           </div>
-          <Link role="menuitem" to="/app" onClick={() => setOpen(false)} className="block px-4 py-2.5 text-sm hover:bg-slate-50">
+          <Link role="menuitem" to="/app" onClick={() => setOpen(false)} className="block px-4 py-2.5 text-sm hover:bg-brand-mist">
             Projects
           </Link>
-          <Link role="menuitem" to="/account" onClick={() => setOpen(false)} className="block px-4 py-2.5 text-sm hover:bg-slate-50">
+          <Link role="menuitem" to="/account" onClick={() => setOpen(false)} className="block px-4 py-2.5 text-sm hover:bg-brand-mist">
             Account settings
           </Link>
           <button role="menuitem" onClick={signOut} className="block w-full border-t border-slate-100 px-4 py-2.5 text-left text-sm text-rose-600 hover:bg-rose-50">
@@ -74,23 +74,17 @@ function UserMenu() {
 }
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
-  `rounded-lg px-3 py-1.5 text-sm font-medium transition ${isActive ? "bg-white/10 text-white" : "text-slate-300 hover:text-white"}`;
+  `rounded-lg px-3 py-1.5 text-sm font-medium transition ${isActive ? "bg-brand-mist text-brand-violet" : "text-brand-muted hover:text-brand-violet"}`;
 
 export function AppHeader() {
   return (
-    <header className="relative bg-brand-night text-white">
-      <div
-        className="pointer-events-none absolute inset-0 overflow-hidden bg-[radial-gradient(ellipse_at_top_left,rgba(124,58,237,0.45),transparent_55%),radial-gradient(ellipse_at_bottom_right,rgba(34,211,238,0.25),transparent_50%)]"
-        aria-hidden
-      />
-      <div className="relative mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:gap-6 sm:px-6">
+    <header className="sticky top-0 z-30 px-4 pt-3">
+      <div className="mx-auto flex max-w-7xl items-center gap-3 rounded-2xl bg-white/90 py-1.5 pl-3 pr-1.5 shadow-card ring-1 ring-brand-line/60 backdrop-blur-xl sm:gap-6">
         <Link to="/app" className="flex items-center gap-2.5">
-          <img src="/logo.png" alt="VIFE logo" className="h-10 w-10 rounded-xl object-cover shadow-lg shadow-brand-violet/30 ring-1 ring-white/10" />
+          <img src="/logo.png" alt="VIFE logo" className="h-9 w-9 rounded-xl object-cover shadow-glow ring-1 ring-brand-violet/10" />
           <span className="hidden min-w-0 sm:block">
-            <span className="block bg-gradient-to-r from-white via-violet-200 to-cyan-200 bg-clip-text text-xl font-extrabold leading-tight tracking-tight text-transparent">
-              VIFE
-            </span>
-            <span className="block text-xs font-medium text-cyan-200/90">Vibe Intelligence for Engineering</span>
+            <span className="block text-lg font-black leading-tight tracking-[-0.04em] text-brand-ink">VIFE</span>
+            <span className="block text-[11px] font-medium text-brand-muted">Vibe Intelligence for Engineering</span>
           </span>
         </Link>
         <nav className="flex items-center gap-1">
@@ -111,7 +105,7 @@ export function AppHeader() {
 
 export function AppFooter() {
   return (
-    <footer className="mx-auto max-w-7xl px-4 pb-8 pt-2 text-center text-xs text-slate-400 sm:px-6">
+    <footer className="mx-auto max-w-7xl px-4 pb-8 pt-2 text-center text-xs text-brand-muted sm:px-6">
       VIFE · Vibe Intelligence for Engineering
     </footer>
   );

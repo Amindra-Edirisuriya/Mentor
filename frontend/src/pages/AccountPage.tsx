@@ -66,7 +66,7 @@ function ProfileForm() {
     <form onSubmit={submit} className="space-y-4">
       {status && <Notice tone={status.tone}>{status.text}</Notice>}
       <div className="flex items-center gap-4">
-        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-brand-violet to-brand-cyan text-lg font-bold text-white">
+        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-brand-deep to-brand-bright text-lg font-bold text-white">
           {initials(user.name)}
         </span>
         <div className="min-w-0 text-sm">

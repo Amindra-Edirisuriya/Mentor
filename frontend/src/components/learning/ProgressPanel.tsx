@@ -52,7 +52,7 @@ function HistoryChart({ history }: { history: Progress["history"] }) {
               className="group flex h-full flex-1 items-end justify-center focus:outline-none"
             >
               <span
-                className={`block w-full max-w-[28px] rounded-t-[4px] bg-brand-indigo transition-opacity ${active === null || active === i ? "opacity-100" : "opacity-40"} group-focus-visible:ring-2 group-focus-visible:ring-brand-cyan`}
+                className={`block w-full max-w-[28px] rounded-t-[4px] bg-brand-indigo transition-opacity ${active === null || active === i ? "opacity-100" : "opacity-40"} group-focus-visible:ring-2 group-focus-visible:ring-brand-violet/40`}
                 style={{ height: `${Math.max(d.average, 2)}%` }}
               />
             </button>

@@ -30,7 +30,7 @@ export function Section({ title, children, aside }: { title: string; children: R
     <section className="card p-4 sm:p-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-800">
-          <span className="h-4 w-1 rounded-full bg-gradient-to-b from-brand-violet to-brand-cyan" aria-hidden />
+          <span className="h-4 w-1 rounded-full bg-gradient-to-b from-brand-deep to-brand-bright" aria-hidden />
           {title}
         </h2>
         {aside}
@@ -72,7 +72,7 @@ export function Empty({ children }: { children: ReactNode }) {
 export function EmptyState({ icon, title, children }: { icon: ReactNode; title: string; children?: ReactNode }) {
   return (
     <div className="card flex flex-col items-center px-6 py-14 text-center">
-      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-violet/10 to-brand-cyan/10 text-brand-indigo">
+      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-mist to-white text-brand-violet ring-1 ring-inset ring-brand-violet/15">
         {icon}
       </div>
       <h2 className="text-lg font-semibold text-slate-800">{title}</h2>

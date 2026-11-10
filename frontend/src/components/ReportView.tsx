@@ -23,7 +23,7 @@ export function ReportView({ projectId, report }: { projectId: string; report: A
           ["Models", s.model_count],
         ].map(([label, value]) => (
           <div key={label} className="card relative overflow-hidden p-4">
-            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-violet via-brand-blue to-brand-cyan" aria-hidden />
+            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-deep via-brand-violet to-brand-bright" aria-hidden />
             <div className="text-xs font-medium text-slate-500">{label}</div>
             <div className="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
               {Number(value).toLocaleString()}
@@ -96,7 +96,7 @@ export function ReportView({ projectId, report }: { projectId: string; report: A
                 <li key={l.name} className="flex items-center gap-2">
                   <span className="w-20 truncate sm:w-24">{l.name}</span>
                   <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
-                    <div className="h-2 rounded-full bg-gradient-to-r from-brand-violet to-brand-cyan" style={{ width: `${l.percent}%` }} />
+                    <div className="h-2 rounded-full bg-gradient-to-r from-brand-deep to-brand-bright" style={{ width: `${l.percent}%` }} />
                   </div>
                   <span className="w-20 text-right text-xs text-slate-500">{l.lines} lines</span>
                 </li>

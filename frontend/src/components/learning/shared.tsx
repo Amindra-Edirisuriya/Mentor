@@ -34,7 +34,7 @@ export function ProgressBar({ value, className = "" }: { value: number; classNam
   const pct = Math.max(0, Math.min(100, value));
   return (
     <div className={`h-2 overflow-hidden rounded-full bg-slate-100 ${className}`} role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
-      <div className="h-full rounded-full bg-gradient-to-r from-brand-violet to-brand-cyan transition-all" style={{ width: `${pct}%` }} />
+      <div className="h-full rounded-full bg-gradient-to-r from-brand-deep to-brand-bright transition-all" style={{ width: `${pct}%` }} />
     </div>
   );
 }
