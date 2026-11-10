@@ -1,5 +1,12 @@
 // Mirrors the backend JSON (app/analysis/*, app/intelligence/summary.py, app/schemas.py).
 
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  created_at: string;
+}
+
 export interface Evidence {
   id: string;
   file_path: string;
@@ -140,4 +147,93 @@ export interface ProjectCreated {
   run_id: string;
   status: string;
   error: string | null;
+}
+
+// --- Learning (backend app/api/learning.py) ---
+
+export type ConceptStatus = "not_started" | "learning" | "mastered";
+
+export interface LearningResource {
+  title: string;
+  url: string;
+  kind: string;
+}
+
+export interface PathwayConcept {
+  key: string;
+  name: string;
+  level: number;
+  description: string;
+  evidence: Evidence[];
+  resources: LearningResource[];
+  status: ConceptStatus;
+  score: number | null;
+  attempts: number;
+  has_explanation: boolean;
+}
+
+export interface Pathway {
+  concepts: PathwayConcept[];
+  next_concept: string | null;
+  mastered: number;
+  total: number;
+}
+
+export interface Explanation {
+  concept_key: string;
+  model: string;
+  claims: Claim[];
+  key_terms: { term: string; meaning: string }[];
+  rejected: { text: string; reason: string }[];
+}
+
+export type PracticeMode = "quiz" | "viva";
+
+export interface PracticeQuestion {
+  index: number;
+  question: string;
+  concept_key: string;
+  concept_name: string;
+  difficulty: "easy" | "medium" | "hard";
+  evidence: Evidence[];
+}
+
+export interface PracticeSession {
+  id: string;
+  mode: PracticeMode;
+  questions: PracticeQuestion[];
+}
+
+export interface GradeResult {
+  score: number;
+  feedback: string;
+  missing_points: string[];
+  key_points: string[];
+  evidence_ids: string[];
+  concept: { key: string; score: number; attempts: number; status: ConceptStatus };
+}
+
+export interface Progress {
+  overall: number;
+  mastered: number;
+  learning: number;
+  not_started: number;
+  total_attempts: number;
+  concepts: { key: string; name: string; status: ConceptStatus; score: number; attempts: number }[];
+  history: { date: string; attempts: number; average: number }[];
+  recent: { concept_key: string; mode: PracticeMode; question: string; score: number; created_at: string }[];
+}
+
+export interface Slide {
+  title: string;
+  bullets: Claim[];
+  notes: string;
+}
+
+export interface Presentation {
+  model: string;
+  title: string;
+  minutes: number;
+  slides: Slide[];
+  rejected_bullets: number;
 }

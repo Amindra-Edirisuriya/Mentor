@@ -48,8 +48,17 @@ def db_session_factory() -> Iterator[sessionmaker[Session]]:
     engine.dispose()
 
 
+PASSWORD = "correct-horse-42"
+
+
+def register(client: TestClient, email: str = "ada@example.com", name: str = "Ada", password: str = PASSWORD):
+    return client.post("/auth/register", json={"name": name, "email": email, "password": password})
+
+
 @pytest.fixture
-def client(test_settings: Settings, db_session_factory: sessionmaker[Session]) -> Iterator[TestClient]:
+def anon_client(test_settings: Settings, db_session_factory: sessionmaker[Session]) -> Iterator[TestClient]:
+    """A client with no session cookie."""
+
     def override_db() -> Iterator[Session]:
         with db_session_factory() as session:
             yield session
@@ -59,3 +68,10 @@ def client(test_settings: Settings, db_session_factory: sessionmaker[Session]) -
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def client(anon_client: TestClient) -> TestClient:
+    """A client signed in as a freshly registered user (the session cookie is kept)."""
+    assert register(anon_client).status_code == 201
+    return anon_client

@@ -7,6 +7,15 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict
 
 
+class UserOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    email: str
+    name: str
+    created_at: datetime
+
+
 class RunOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

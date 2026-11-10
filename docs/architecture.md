@@ -55,8 +55,18 @@ Stack decisions are recorded in [ADR 0001](adr/0001-backend-stack.md).
 
 ## API
 
+All `/projects` endpoints require a signed-in session and only see the caller's own projects;
+another user's project id returns 404. See [ADR 0004](adr/0004-accounts-and-cookie-sessions.md).
+
 | Method & path | Purpose |
 |---|---|
+| `POST /auth/register` | Create an account (name, email, password) and sign in. 409 if the email is taken. |
+| `POST /auth/login` / `POST /auth/logout` | Start / end a session (`vife_session` httpOnly cookie). |
+| `GET /auth/me` / `PATCH /auth/me` | Current user / update name. |
+| `POST /auth/change-password` | Needs the current password; ends the user's other sessions. |
+| `POST /auth/forgot-password` | Always 202; if the account exists, a 30-minute single-use link is "sent" (console backend). |
+| `POST /auth/reset-password` | Token + new password; ends all sessions. |
+| `DELETE /auth/me` | Needs the password; deletes the account, its projects and their files. |
 | `POST /projects` (multipart `file`, optional `name`) | Stream ZIP to `storage/uploads` (size-capped), safe-extract to `storage/projects/<id>/source`, analyse synchronously, persist run + report. 400 for unsafe/non-ZIP, 413 for too large. Unsafe uploads aren't persisted. |
 | `GET /projects` | List projects with their runs. |
 | `GET /projects/{id}` | One project with runs. |
@@ -81,14 +91,54 @@ an LLM SDK.
 Analysis runs inside the request for Milestone 1. A background worker can replace this later
 without changing the `analysis_runs` model (`status` already supports `running`).
 
+## Learning layer
+
+Deterministic concept detection lives in `app/analysis/concepts.py`. It derives concepts (REST
+API, middleware, data modelling, JWT auth, password hashing, file uploads, role-based access,
+components, …) from the stored report, each citing existing evidence. Because it reads the
+stored report JSON, older reports get concepts too. `app/learning/` builds on it:
+
+| Module | Purpose |
+|---|---|
+| `catalog.py` | Static concept info: level (pathway order), description, free official resources. |
+| `generation.py` | LLM tasks (explain, questions, grade, presentation) with schemas and validation of every output. |
+| `fake.py` | Deterministic offline answers for each task (`LLM_PROVIDER=fake`, tests). |
+
+Tables: `learning_outputs` (explanations, question sets with hidden key points, decks),
+`concept_progress` (0–100 moving average per concept, mastered at 75), `practice_attempts`.
+
+| Method & path (`/projects/{id}/learning/…`) | Purpose |
+|---|---|
+| `GET pathway` | Concepts by level, with status, score, evidence and resources; `next_concept`. |
+| `POST/GET concepts/{key}/explanation` | Cited, step-by-step walkthrough of the concept in this code, plus key terms. |
+| `POST practice` (`mode` quiz/viva, `concept_key?`, `count`) | Grounded questions; with no concept, targets the weakest. |
+| `POST practice/{set}/answer` (`index`, `answer`) | Grade (redacted answer), feedback, missing points; updates progress. |
+| `GET progress` | Overall, per-concept mastery, daily history, recent answers. |
+| `POST/GET presentation` (`minutes`) | Evidence-cited slides with speaker notes. |
+
+Providers: `app/intelligence/llm.py` has `FakeLLMClient` and `OpenAICompatibleClient` (Ollama,
+Groq, Gemini, OpenRouter; see [ADR 0005](adr/0005-free-llm-providers.md)). Provider errors
+return 502 with an actionable message.
+
 ## Frontend (increment 8)
 
 `frontend/`: Vite + React 18 + TypeScript (strict, `noUncheckedIndexedAccess`) + Tailwind 3.
 The dev server proxies `/api/*` to the backend, so the backend needs no CORS configuration.
 
+Routes (`react-router-dom`): `/` landing, `/login`, `/register`, `/forgot-password`,
+`/reset-password?token=…`, `/app` (dashboard) and `/account` (both need sign-in), plus a 404 page.
+
 | Path | Purpose |
 |---|---|
-| `src/api.ts` | Typed fetch wrappers for the endpoints above. |
+| `src/api.ts` | Typed fetch wrappers for the endpoints above. A 401 on a non-auth call signs the UI out. |
+| `src/auth/AuthContext.tsx` | Current user (`undefined` while checking, `null` when signed out), login/register/logout. |
+| `src/auth/guards.tsx` | `RequireAuth` (redirects to `/login` and back) and `PublicOnly`. |
+| `src/auth/AuthLayout.tsx` | Split-screen layout for the sign-in, sign-up and password pages. |
+| `src/pages/*` | Landing, Login, Register, Forgot/Reset password, Dashboard, Account. |
+| `src/components/learning/*` | Dashboard tabs: Learn (pathway + explanations + resources), Practice & viva (timer, voice answers), Progress (mastery + daily chart), Presentation (slides, notes, rehearsal timer, Markdown/PDF export). |
+| `src/lib/learning.ts` | Score tones, clock formatting, deck → Markdown (unit-tested). |
+| `src/components/forms.tsx` | Text and password fields (show/hide, strength meter), submit button, notices. |
+| `src/lib/password.ts`, `src/lib/redirect.ts` | Password policy mirrored from the backend, and same-site redirect check (unit-tested). |
 | `src/types.ts` | TypeScript mirror of the report/summary JSON. |
 | `src/lib/report.ts` | Pure helpers: location formatting, evidence index, route grouping, language shares (unit-tested). |
 | `src/components/UploadForm.tsx` | ZIP upload. |
@@ -115,7 +165,13 @@ committed or logged.
 | `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` / `POSTGRES_PORT` | docker-compose | `engimentor` / *(required)* / `engimentor` / `5433` |
 | `STORAGE_DIR` | backend | `<repo>/storage` |
 | `MAX_UPLOAD_MB` | backend | `50` |
-| `LLM_PROVIDER` | backend | `fake` |
+| `LLM_PROVIDER` | backend | `fake` (or `openai_compatible`) |
+| `LLM_BASE_URL` / `LLM_MODEL` / `LLM_API_KEY` | backend | `http://localhost:11434/v1` / `qwen2.5-coder:7b` / empty |
+| `LLM_TIMEOUT_SECONDS` | backend | `180` |
+| `SESSION_DAYS` | backend | `14` |
+| `PASSWORD_RESET_MINUTES` | backend | `30` |
+| `APP_URL` | backend (reset links) | `http://localhost:5173` |
+| `EMAIL_BACKEND` | backend | `console` (logs reset links; real email needs approval) |
 
 The Docker database is published on host port **5433** so it doesn't collide with
 a native PostgreSQL service on 5432 (inside the container it still listens on 5432).
