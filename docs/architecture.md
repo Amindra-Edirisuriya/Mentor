@@ -182,6 +182,15 @@ committed or logged.
 The Docker database is published on host port **5433** so it doesn't collide with
 a native PostgreSQL service on 5432 (inside the container it still listens on 5432).
 
+## Deployment
+
+See ADR 0006. **Vercel** serves the frontend build (`frontend/vercel.json`). It rewrites
+`/api/*` to the **Render** web service defined in `render.yaml`, which runs migrations and then
+uvicorn. The service uses a **Neon** Postgres database through `DATABASE_URL`, set in the
+Render dashboard. The browser only sees the Vercel origin, so session cookies stay first-party
+and no CORS is needed. Free-tier limits: the API sleeps when idle, and extracted uploads live on
+an ephemeral disk.
+
 ## Security boundaries (planned, from CLAUDE.md)
 
 - Uploaded projects are untrusted: never executed, imported, installed or built.

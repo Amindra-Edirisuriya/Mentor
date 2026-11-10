@@ -3,7 +3,7 @@
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import SecretStr
+from pydantic import SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -35,6 +35,15 @@ class Settings(BaseSettings):
     app_url: str = "http://localhost:5173"
     # "console" logs reset links to the API console; a real email provider needs approval first.
     email_backend: str = "console"
+
+    @field_validator("database_url")
+    @classmethod
+    def _use_psycopg_driver(cls, url: str) -> str:
+        """Accept plain URLs from hosts like Neon/Render (postgres:// or postgresql://) and use psycopg 3."""
+        for prefix in ("postgres://", "postgresql://"):
+            if url.startswith(prefix):
+                return "postgresql+psycopg://" + url[len(prefix):]
+        return url
 
     @property
     def cookie_secure(self) -> bool:

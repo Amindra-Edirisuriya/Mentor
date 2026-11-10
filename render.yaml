@@ -1,0 +1,27 @@
+# Render blueprint for the VIFE backend (see docs/adr/0006-hosting-vercel-render-neon.md).
+# The frontend is on Vercel and forwards /api/* here, so the browser only ever talks to one origin.
+services:
+  - type: web
+    name: vife-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install .
+    # Apply migrations on every start, then serve. Render provides $PORT.
+    startCommand: alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips="*"
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: APP_ENV
+        value: production
+      - key: APP_URL
+        value: https://mentor-two-pied.vercel.app
+      - key: LLM_PROVIDER
+        value: fake
+      - key: EMAIL_BACKEND
+        value: console
+      # Paste the Neon connection string in the Render dashboard. Never commit it.
+      - key: DATABASE_URL
+        sync: false
