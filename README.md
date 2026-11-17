@@ -3,6 +3,7 @@
 </p>
 
 <h1 align="center">VIFE</h1>
+<p align="center"><img src="https://github.com/Amindra-Edirisuriya/Mentor/actions/workflows/ci.yml/badge.svg" alt="CI"></p>
 <p align="center"><b>Vibe Intelligence for Engineering</b></p>
 <p align="center">An AI-powered engineering project intelligence and adaptive learning platform.</p>
 
